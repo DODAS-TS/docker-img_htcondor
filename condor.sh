@@ -35,16 +35,32 @@ chmod 600 /root/gwms_proxy
 export X509_USER_PROXY=/root/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
 
-
-#!/bin/bash
-cat << 'EOF' >> /root/renewproxy.sh
+cat > /root/renewproxy.sh << EOF
 #!/bin/bash
 resp=0
-until [  $resp -eq 200 ]; do
-        resp=$(curl -s \
-                -w%{http_code} \
+
+max_attempts=30
+attempt_num=1
+
+until [  \$resp -eq 200 ]; do
+        resp=\$(curl -s \\
+                -w%{http_code} \\
                 $PROXY_CACHE/get_proxy -o /root/gwms_proxy_tmp)
+        if (( \$resp == 200 ))
+        then
+            echo "Allright!"
+        else
+            if (( attempt_num == max_attempts ))
+            then
+               echo "Attempt \$attempt_num failed and there are no more attempts left!"
+               break
+            else
+               echo "Failing with error \$resp . Command failed failed! Trying again in \$attempt_num seconds..."
+               sleep \$(( attempt_num++ ))
+            fi
+        fi
 done
+
 cp /root/gwms_proxy_tmp /root/gwms_proxy
 EOF
 
