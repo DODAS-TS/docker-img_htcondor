@@ -1,7 +1,7 @@
 NS ?= dodasts
-VERSION ?= travis 
+VERSION ?= `git describe --tags`
 
-IMAGE_NAME ?= htocondor
+IMAGE_NAME ?= htcondor
 CONTAINER_NAME ?= htcondor
 CONTAINER_INSTANCE ?= default
 
