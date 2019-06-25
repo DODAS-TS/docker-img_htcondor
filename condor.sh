@@ -173,15 +173,16 @@ then
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
 
-    exec python form.py
+    cd /opt/dodas/htc_config/webapp
+    echo "==> Mapping authorized users"
+    python form.py
 
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
     echo ""
     echo "==> Start condor"
-    condor_master
+    condor_master -f
     echo "==> Start the webUI on port 48080"
-    cd /opt/dodas/htc_config/webapp
 elif [ "$1" == "flock" ];
 then
     echo "==> Compile configuration file for flock cluster node with env vars"

@@ -14,12 +14,12 @@ def register():
 
     endpoint = os.environ.get("PROXY_CACHE")
 
-    response = requests.get(endpoint+"/get_dn_map")
+    response = requests.get("http://"+endpoint+"/get_dn_map")
     try:
         response.raise_for_status()
     except requests.exceptions.HTTPError as err:
         # Whoops it wasn't a 200
-        logging.error("Error in get exchange token: %s", err)
+        logging.error("Error in getting dn_map: %s", err)
         return response.status_code
     result = json.loads(response.content)
     logging.debug("Result: %s", result)
