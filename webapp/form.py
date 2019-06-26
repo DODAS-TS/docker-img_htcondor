@@ -49,6 +49,9 @@ def register():
         else:
             logging.info("Created user %s", username)
 
+    entries.append("GSI (.*) GSS_ASSIST_GRIDMAP\n")
+    entries.append("GSI (.*) anonymous")
+
     with open('/home/uwdir/condormapfile', 'w+') as condor_file:
         condor_file.writelines(entries)
 
