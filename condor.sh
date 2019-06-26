@@ -38,7 +38,8 @@ export X509_CERT_DIR=/etc/grid-security/certificates
 
 
 cat > /root/renewproxy.sh << EOF
-curl -s $PROXY_CACHE/get_proxy -o /root/gwms_proxy
+curl -s $PROXY_CACHE/get_proxy --fail -o /tmp/gwms_proxy && mv /tmp/gwms_proxy /root/gwms_proxy
+chmod 600 /root/gwms_proxy
 EOF
 chmod +x /root/renewproxy.sh
 
@@ -176,6 +177,12 @@ then
     cd /opt/dodas/htc_config/webapp
     echo "==> Mapping authorized users"
     python form.py
+
+    cat >> /root/renewproxy.sh << EOF 
+cd /opt/dodas/htc_config/webapp
+echo "==> Mapping authorized users"
+python form.py
+EOF
 
     echo "==> Public schedd host"
     dodas_cache zookeeper SCHEDD_HOST "$NETWORK_INTERFACE"
