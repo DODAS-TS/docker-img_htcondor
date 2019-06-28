@@ -8,7 +8,7 @@ RUN useradd -ms /bin/bash condor \
     && rpm --import RPM-GPG-KEY-HTCondor \
     && yum --setopt=tsflags=nodocs -y update \
     && yum --setopt=tsflags=nodocs -y install \
-        condor-all \
+        condor-all-8.8.2-1.el7 \
         gcc \
         gcc-c++ \
         make \
