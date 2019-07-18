@@ -7,9 +7,12 @@ RUN useradd -ms /bin/bash condor \
     && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo \
     && wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor \
     && rpm --import RPM-GPG-KEY-HTCondor \
-    && yum --setopt=tsflags=nodocs -y update \
-    && yum --setopt=tsflags=nodocs -y install \
-        condor-all \
+    && yum --setopt=tsflags=nodocs -y update
+
+#RUN yum --showduplicates list condor-all 
+
+RUN yum --setopt=tsflags=nodocs -y install \
+        condor-all-8.8.2-1.el7 \
         gcc \
         gcc-c++ \
         make \
@@ -21,6 +24,40 @@ RUN useradd -ms /bin/bash condor \
     && pip install --upgrade pip setuptools \
     && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF htcondor \
     && systemctl disable condor
+
+
+# Create the astrosoft directory in /home. This will be our
+# install target for all astronomy software
+ENV ASTROPFX /home/astrosoft
+RUN mkdir -p $ASTROPFX
+
+# Add a timestamp for the build. Also, bust the cache.
+#ADD https://now.httpbin.org/when/now /opt/docker/etc/timestamp
+
+# Anaconda Fermitools, and other conda packages
+ENV CONDAPFX /opt/anaconda
+ENV CONDABIN ${CONDAPFX}/bin/conda
+
+RUN curl -s -L https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > anaconda.sh && bash anaconda.sh -b -p ${CONDAPFX}
+
+RUN $CONDABIN install --yes -c conda-forge/label/cf201901 gosu tini
+RUN $CONDABIN create --name fermi -c conda-forge/label/cf201901 -c fermi/label/beta -c fermi \
+  astropy \
+  fermipy \
+  fermitools=1.0.5 \
+  fermitools-data=0.17 \
+  jupyter \
+  libpng \
+  matplotlib \
+  naima \
+  numpy \
+  pmw \
+  pyyaml \
+  scipy \
+  --yes
+RUN $CONDAPFX/bin/pip install pyds9 pysqlite
+RUN rm -rf ${CONDAPFX}/pkgs/*
+RUN chmod -R g+rwx /opt/anaconda
 
 # Root home
 WORKDIR /root

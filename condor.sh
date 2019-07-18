@@ -40,10 +40,13 @@ export X509_CERT_DIR=/etc/grid-security/certificates
 cat > /root/renewproxy.sh << EOF
 curl -s $PROXY_CACHE/get_proxy --fail -o /tmp/gwms_proxy && mv /tmp/gwms_proxy /root/gwms_proxy
 chmod 600 /root/gwms_proxy
+wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/view/dodas/job/ca_DODAS-TTS/job/master/lastSuccessfulBuild/artifact/ca_DODAS-TTS.repo
+yum -y install ca_DODAS-TTS && \
+   /usr/sbin/fetch-crl -q  && condor_reconfig
 EOF
 chmod +x /root/renewproxy.sh
 
-(crontab -l 2>/dev/null; echo "* * * * * /root/renewproxy.sh") | crontab 
+(crontab -l 2>/dev/null; echo "*/15 * * * * /root/renewproxy.sh") | crontab 
 
 crond 2>/dev/null
 
@@ -181,7 +184,7 @@ then
     cat >> /root/renewproxy.sh << EOF 
 cd /opt/dodas/htc_config/webapp
 echo "==> Mapping authorized users"
-python form.py
+python form.py && X509_USER_PROXY=/root/gwms_proxy condor_reconfig
 EOF
 
     echo "==> Public schedd host"
