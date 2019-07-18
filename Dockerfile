@@ -55,6 +55,7 @@ RUN $CONDABIN create --name fermi -c conda-forge/label/cf201901 -c fermi/label/b
   pyyaml \
   scipy \
   --yes
+RUN yum install -y sqlite-devel
 RUN $CONDAPFX/bin/pip install pyds9 pysqlite
 RUN rm -rf ${CONDAPFX}/pkgs/*
 RUN chmod -R g+rwx /opt/anaconda
