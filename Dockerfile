@@ -3,12 +3,12 @@ FROM dodasts/centos:7-grid-tini-sshd
 WORKDIR /etc/yum.repos.d
 
 RUN useradd -ms /bin/bash condor \
-    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo \
+    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-development-rhel7.repo \
     && wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor \
     && rpm --import RPM-GPG-KEY-HTCondor \
     && yum --setopt=tsflags=nodocs -y update \
     && yum --setopt=tsflags=nodocs -y install \
-        condor-all-8.8.2-1.el7 \
+        condor-all \
         gcc \
         gcc-c++ \
         make \
