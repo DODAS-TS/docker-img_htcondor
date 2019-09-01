@@ -114,9 +114,9 @@ then
     export CONDOR_DAEMON_LIST="COLLECTOR, MASTER, NEGOTIATOR"
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
-    j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config_gsi
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config_gsi
     echo "==> Start condor"
     condor_master -f
 elif [ "$1" == "wn" ];
@@ -142,9 +142,9 @@ then
     echo "==> Compile configuration file for worker node with env vars"
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
-    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config_gsi
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config_gsi
     echo "==> Start condor"
     condor_master -f
     echo "==> Start service"
@@ -193,9 +193,9 @@ then
     fi
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
-    j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config_gsi
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config_gsi
 
     idmap=`echo $id | sed 's|/|\\\/|g'`
     idmap="GSI \"^"`echo $idmap | sed 's|=|\\=|g'`"$\"    condor"
@@ -224,9 +224,9 @@ then
     # export NETWORK_INTERFACE=$(hostname -i)
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
-    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config_gsi
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config_gsi
     echo "==> Start condor"
     condor_master
     echo "==> Start sshd on port 32042"
@@ -234,9 +234,9 @@ then
 elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
-    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
+    j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config_gsi
     id=`voms-proxy-info --file /root/gwms_proxy --identity`
-    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
+    sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config_gsi
 
     echo "==> Start condor"
     condor_master -f
