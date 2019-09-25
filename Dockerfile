@@ -1,11 +1,8 @@
-FROM dodasts/centos:7-grid-tini-sshd
+FROM dodasts/centos:7-grid-tini-sshd as base
 
 WORKDIR /etc/yum.repos.d
 
 RUN useradd -ms /bin/bash condor \
-    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-development-rhel7.repo \
-    && wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor \
-    && rpm --import RPM-GPG-KEY-HTCondor \
     && yum --setopt=tsflags=nodocs -y update \
     && yum --setopt=tsflags=nodocs -y install \
         condor-all \
@@ -18,8 +15,7 @@ RUN useradd -ms /bin/bash condor \
         python-pip \
     && yum clean all \
     && pip install --upgrade pip setuptools \
-    && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF htcondor \
-    && systemctl disable condor
+    && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF
 
 # Root home
 WORKDIR /root
@@ -80,5 +76,18 @@ RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
 # CentOS uname characteristics
 RUN mv /bin/uname /bin/uname_old
 COPY ./bin/uname /bin/
+
+FROM  base as build
+
+RUN yum install -y git
+RUN git clone https://github.com/htcondor/htcondor.git
+
+WORKDIR /root/htcondor
+
+RUN git checkout V8_9_3-branch
+
+RUN yum install -y cmake
+
+FROM build as production
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/dodas_condor"]
