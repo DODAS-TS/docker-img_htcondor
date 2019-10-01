@@ -90,7 +90,7 @@ RUN yum install -y cmake autotools git cmake make gcc gcc-c++ gcc-fortran pam-de
 
 #RUN ./configure_uw -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
 
-RUN mkdir build2 && cd build2 && cmake ..
+RUN mkdir build2 && cd build2 && cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr/
 
 FROM build as production
 
