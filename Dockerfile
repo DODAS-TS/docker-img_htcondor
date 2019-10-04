@@ -35,35 +35,50 @@ RUN mkdir -p $ASTROPFX
 #ADD https://now.httpbin.org/when/now /opt/docker/etc/timestamp
 
 # Anaconda Fermitools, and other conda packages
-ENV CONDAPFX /opt/anaconda
-ENV CONDABIN ${CONDAPFX}/bin/conda
+ENV CONDAPFX="/cvmfs/fermi.local.repo/Anaconda3"
+ENV CONDABIN="${CONDAPFX}/bin/conda"
 
-RUN curl -s -L https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > anaconda.sh && bash anaconda.sh -b -p ${CONDAPFX}
+RUN yum install -y sqlite-devel \
+  autoconf \
+  automake \
+  bzip2-devel \
+  emacs \
+  gcc \
+  gcc-c++ \
+  gcc-gfortran \
+  git \
+  libpng-devel \
+  libSM-devel \
+  libX11-devel \
+  libXdmcp-devel \
+  libXext-devel \
+  libXft-devel \
+  libXpm-devel \
+  libXrender-devel \
+  libXt-devel \
+  make \
+  mesa-libGL-devel \
+  ncurses-devel \
+  openssl-devel \
+  patch \
+  perl \
+  perl-ExtUtils-MakeMaker \
+  readline-devel \
+  sqlite-devel \
+  sudo \
+  tar \
+  vim \
+  wget \
+  which \
+  zlib-devel && \
+yum clean all && \
+rm -rf /var/cache/yum
 
-RUN $CONDABIN install --yes -c conda-forge/label/cf201901 gosu 
-RUN $CONDABIN install --yes -c cefca pyfits
-RUN $CONDABIN create --name fermi -c conda-forge/label/cf201901 -c fermi/label/beta -c fermi \
-  astropy \
-  fermipy \
-  fermitools=1.0.5 \
-  fermitools-data=0.17 \
-  jupyter \
-  libpng \
-  matplotlib \
-  naima \
-  numpy \
-  pmw \
-  pyyaml \
-  scipy \
-  --yes
-RUN yum install -y sqlite-devel
-RUN $CONDAPFX/bin/pip install pyds9 pysqlite
-RUN rm -rf ${CONDAPFX}/pkgs/*
-RUN chmod -R g+rwx /opt/anaconda
+ENV PATH="/cvmfs/fermi.local.repo/Anaconda3/bin:${PATH}"
 
 ENV PATH="/opt/anaconda/bin:${PATH}"
 
-ENV HEADAS=/cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17
+ENV HEADAS="/cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17"
 
 # Root home
 WORKDIR /root
