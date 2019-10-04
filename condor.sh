@@ -36,6 +36,7 @@ chmod 600 /root/gwms_proxy
 export X509_USER_PROXY=/root/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
 
+source /cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17/headas-init.sh
 
 cat > /root/renewproxy.sh << EOF
 curl -s $PROXY_CACHE/get_proxy --fail -o /tmp/gwms_proxy && mv /tmp/gwms_proxy /root/gwms_proxy
