@@ -74,7 +74,7 @@ RUN yum install -y sqlite-devel \
 yum clean all && \
 rm -rf /var/cache/yum
 
-ENV PATH="/cvmfs/fermi.local.repo/Anaconda3/bin:${PATH}"
+ENV PATH="/cvmfs/fermi.local.repo/anaconda3/bin:${PATH}"
 
 ENV HEADAS="/cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17"
 
