@@ -35,7 +35,7 @@ RUN mkdir -p $ASTROPFX
 #ADD https://now.httpbin.org/when/now /opt/docker/etc/timestamp
 
 # Anaconda Fermitools, and other conda packages
-ENV CONDAPFX="/cvmfs/fermi.local.repo/Anaconda3"
+ENV CONDAPFX="/cvmfs/fermi.local.repo/anaconda3"
 ENV CONDABIN="${CONDAPFX}/bin/conda"
 
 RUN yum install -y sqlite-devel \
