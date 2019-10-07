@@ -88,9 +88,7 @@ RUN git checkout V8_9_3-branch
 
 RUN yum install -y cmake autotools git cmake make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel boost-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper
 
-#RUN ./configure_uw -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
-
-RUN mkdir build2 && cd build2 && cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr/
+RUN ./configure_uw -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
 
 FROM build as production
 
