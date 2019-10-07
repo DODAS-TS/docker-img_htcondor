@@ -86,9 +86,12 @@ WORKDIR /root/htcondor
 
 RUN git checkout V8_9_3-branch
 
-RUN yum install -y cmake autotools git cmake make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel boost-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper
+RUN yum update -y
 
-RUN ./configure_uw -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
+RUN yum install -y cmake openssl-static  openssl-libs autotools git cmake make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel boost-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper
+
+RUN ./configure_uw  -DOPENSSL_ROOT_DIR=/usr/local/ssl -DOPENSSL_LIBRARIES=/usr/local/ssl/lib  -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
+
 
 FROM build as production
 
