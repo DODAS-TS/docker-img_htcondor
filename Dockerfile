@@ -88,11 +88,26 @@ RUN git checkout V8_9_3-branch
 
 RUN yum update -y
 
-RUN yum install -y cmake autotools git cmake make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel boost-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper
+RUN yum install -y autotools git make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel munge-devel boost169-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper
 
-RUN ./configure_uw  -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false && make
+RUN yum install -y cmake3 
 
+RUN cmake3 --version
 
-FROM build as production
+RUN git checkout master 
+
+RUN yum -y install https://repo.opensciencegrid.org/osg/3.5/osg-3.5-el7-release-latest.rpm
+
+RUN yum install -y scitokens-cpp-devel
+RUN cmake3 -DWITH_OPENSSL:BOOL=true -DWITH_PYTHON_BINDINGS:BOOL=false -DWITH_CREAM:BOOL=false -DWITH_GLOBUS:BOOL=false -DWITH_BLAHP:BOOL=false -DCLIPPED:BOOL=true -DWITH_BOINC:BOOL=false -DCMAKE_INSTALL_PREFIX=/usr .  && make 
+
+RUN make install
+
+FROM build as exec
+
+WORKDIR /root
+
+RUN rm -fr /root/htcondor
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/dodas_condor"]
+
