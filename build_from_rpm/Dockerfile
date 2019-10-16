@@ -1,12 +1,23 @@
-FROM dodasts/centos:7-grid-tini-sshd as base
+FROM dodasts/htcondor:build as build
+
+FROM dodasts/centos:7-grid-tini-sshd
 
 WORKDIR /etc/yum.repos.d
 
-
 RUN useradd -ms /bin/bash condor \
-    && yum --setopt=tsflags=nodocs -y update \
-    && yum --setopt=tsflags=nodocs -y install \
+    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-development-rhel7.repo \
+    && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo \
+    && wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor 
+
+RUN yum -y install https://repo.opensciencegrid.org/osg/3.5/osg-3.5-el7-release-latest.rpm \
+    && yum-config-manager --enable osg-testing
+
+RUN rpm --import RPM-GPG-KEY-HTCondor \
+    && yum --setopt=tsflags=nodocs -y update 
+
+RUN yum --setopt=tsflags=nodocs -y install \
         condor-all \
+        scitokens-cpp \
         gcc \
         gcc-c++ \
         make \
@@ -16,10 +27,9 @@ RUN useradd -ms /bin/bash condor \
         python-pip \
     && yum clean all \
     && pip install --upgrade pip setuptools \
-    && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF
+    && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF htcondor \
+    && systemctl disable condor
 
-RUN yum -y install https://repo.opensciencegrid.org/osg/3.5/osg-3.5-el7-release-latest.rpm
-RUN yum install -y scitokens-cpp-devel autotools git cmake3 make gcc gcc-c++ gcc-fortran pam-devel libcurl libcurl-devel munge-devel boost169-devel pcre-devel libxml2-devel libuuid-devel glibc-static sqlite-devel patch python-devel bison flex openssl-devel nss-devel perl-Data-Dumper 
 # Root home
 WORKDIR /root
 
@@ -55,17 +65,17 @@ RUN mkdir -p /opt/dodas/htc_config \
     && mkdir -p /opt/dodas/fs_remote_dir \
     && mkdir -p /opt/dodas/health_checks \
     && mkdir -p /etc/skel/.ssh
-COPY ./condor.sh /opt/dodas/
+COPY condor.sh /opt/dodas/
 COPY ./health_checks/check_condor_processes.py /opt/dodas/health_checks/
 COPY ./health_checks/check_cvmfs_folders.py /opt/dodas/health_checks/
 COPY ./health_checks/check_ssh_server.py /opt/dodas/health_checks/
 COPY ./health_checks/check_condor_master_ip.sh /opt/dodas/health_checks/
 COPY ./health_checks/check_condor_schedd_tunnel.sh /opt/dodas/health_checks/
-COPY ./cache.py /opt/dodas/
+COPY cache.py /opt/dodas/
 COPY ./config/condor_config_schedd.template /opt/dodas/htc_config/
 COPY ./config/condor_config_master.template /opt/dodas/htc_config/
 COPY ./config/condor_config_wn.template /opt/dodas/htc_config/
-COPY ./webapp /opt/dodas/htc_config/webapp
+COPY webapp /opt/dodas/htc_config/webapp
 RUN mkdir -p /var/log/form/
 
 RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
@@ -80,13 +90,4 @@ RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
 RUN mv /bin/uname /bin/uname_old
 COPY ./bin/uname /bin/
 
-FROM  base as build
-
-RUN yum install -y git
-RUN git clone https://github.com/htcondor/htcondor.git
-
-WORKDIR /root/htcondor
-
-RUN git checkout V8_9_3-branch
-
-
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/dodas_condor"]
