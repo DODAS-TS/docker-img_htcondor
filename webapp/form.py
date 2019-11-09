@@ -29,6 +29,7 @@ def register():
     entries = []
 
     for username, userid in user_id_map:
+        username = username.replace(" ", "")
         userDN = create_dn_from_userid(userid)
         logging.info("GSI \"^" + userDN.rstrip() + "$\"    " + username)
         entries.append("GSI \"^" + userDN.rstrip() + "$\"    " + username + "\n")
