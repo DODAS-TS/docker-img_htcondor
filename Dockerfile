@@ -1,4 +1,4 @@
-FROM dodasts/centos:7-grid-tini-sshd
+FROM dodasts/centos:7-grid-tini-sshd as BASE
 
 WORKDIR /etc/yum.repos.d
 
@@ -20,6 +20,8 @@ RUN useradd -ms /bin/bash condor \
     && pip install --upgrade pip setuptools \
     && pip install j2cli paramiko psutil kazoo requests flask Flask-WTF htcondor \
     && systemctl disable condor
+
+FROM BASE as APP
 
 # Root home
 WORKDIR /root

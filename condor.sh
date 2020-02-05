@@ -22,54 +22,14 @@ yum -y install ca_DODAS-TTS
 
 /usr/sbin/fetch-crl -q
 
-resp=0
-until [  $resp -eq 200 ]; do
-    resp=$(curl -s \
-        -w%{http_code} \
-        $PROXY_CACHE/get_proxy -o /root/gwms_proxy)
-done
-#############
-
-chmod 600 /root/gwms_proxy
-
-export X509_USER_PROXY=/root/gwms_proxy
+export X509_USER_PROXY=/root/proxy/gwms_proxy
 export X509_CERT_DIR=/etc/grid-security/certificates
 
-cat > /root/renewproxy.sh << EOF
-#!/bin/bash
-resp=0
-
-max_attempts=30
-attempt_num=1
-
-until [  \$resp -eq 200 ]; do
-        resp=\$(curl -s \\
-                -w%{http_code} \\
-                $PROXY_CACHE/get_proxy -o /root/gwms_proxy_tmp)
-        if (( \$resp == 200 ))
-        then
-            echo "Allright!"
-        else
-            if (( attempt_num == max_attempts ))
-            then
-               echo "Attempt \$attempt_num failed and there are no more attempts left!"
-               break
-            else
-               echo "Failing with error \$resp . Command failed failed! Trying again in \$attempt_num seconds..."
-               sleep \$(( attempt_num++ ))
-            fi
-        fi
+until chmod 600 /root/proxy/gwms_proxy && voms-proxy-info --file /root/proxy/gwms_proxy
+do
+    echo "Proxy not available, retry in 60s"
+    sleep 60
 done
-
-cp /root/gwms_proxy_tmp /root/gwms_proxy
-EOF
-
-chmod +x /root/renewproxy.sh
-
-(crontab -l 2>/dev/null; echo "* */10 * * * /root/renewproxy.sh") | crontab 
-
-crond 2>/dev/null
-
 
 cat > /etc/condor/condormapfile << EOF
 GSI (.*) GSS_ASSIST_GRIDMAP
@@ -115,7 +75,7 @@ then
     export FLOCK_FROM="FLOCK_FROM = 192.168.0.*"
     export HOST_ALLOW_FLOCK="$CLUSTER_ALLOW_FLOCK"
     j2 /opt/dodas/htc_config/condor_config_master.template > /etc/condor/condor_config
-    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    id=`voms-proxy-info --file /root/proxy/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
@@ -143,7 +103,7 @@ then
     export CONDOR_DAEMON_LIST="MASTER, STARTD"
     export CCB_ADDRESS_STRING="CCB_ADDRESS = $CCB_ADDRESS"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    id=`voms-proxy-info --file /root/proxy/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master -f
@@ -194,7 +154,7 @@ then
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD"
     export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     j2 /opt/dodas/htc_config/condor_config_schedd.template > /etc/condor/condor_config
-    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    id=`voms-proxy-info --file /root/proxy/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
 
     idmap=`echo $id | sed 's|/|\\\/|g'`
@@ -225,7 +185,7 @@ then
     # export NETWORK_INTERFACE_STRING="NETWORK_INTERFACE = $NETWORK_INTERFACE"
     export CONDOR_DAEMON_LIST="MASTER, SCHEDD, COLLECTOR, NEGOTIATOR"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    id=`voms-proxy-info --file /root/proxy/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
     echo "==> Start condor"
     condor_master
@@ -235,7 +195,7 @@ elif [ "$1" == "all" ];
 then
     echo "==> Compile configuration file for sheduler node with env vars"
     j2 /opt/dodas/htc_config/condor_config_wn.template > /etc/condor/condor_config
-    id=`voms-proxy-info --file /root/gwms_proxy --identity`
+    id=`voms-proxy-info --file /root/proxy/gwms_proxy --identity`
     sed -i -e 's|DUMMY|'"$id"'|g' /etc/condor/condor_config
 
     echo "==> Start condor"
