@@ -1,3 +1,5 @@
+FROM dodasts/tts-cache:v0.1.3-k8s-5 as TTS
+
 FROM dodasts/centos:7-grid-tini-sshd as BASE
 
 WORKDIR /etc/yum.repos.d
@@ -82,5 +84,7 @@ RUN ln -s /opt/dodas/condor.sh /usr/local/sbin/dodas_condor \
 # CentOS uname characteristics
 RUN mv /bin/uname /bin/uname_old
 COPY ./bin/uname /bin/
+
+COPY --from=0 /usr/local/bin/tts-cache /usr/local/bin/tts-cache
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/dodas_condor"]
