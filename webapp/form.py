@@ -1,19 +1,8 @@
 from flask import Flask, request, render_template
-import pycurl
 import os
-import sys
-import requests
-import json
 import subprocess
-from StringIO import StringIO
 import logging
-from urllib3._collections import HTTPHeaderDict
 from wtforms import Form, StringField, PasswordField, validators
-
-if sys.version_info.major == 2:
-    from urlparse import urlsplit
-else:
-    from urllib.parse import urlsplit
 
 APP = Flask(__name__)
 
@@ -51,7 +40,8 @@ def register():
         try:
             DN = err.split("UserDN: ")[1].replace("/", "\/").rstrip()
         except Exception as ex:
-            logging.error("failed to get dn from:  %s", form.username.data, err)
+            logging.error("failed to get dn from:  %s",
+                          form.username.data, ex)
             return render_template('register.html', DN, form=form)
 
         with open('/home/uwdir/condormapfile', 'r') as condor_file:
