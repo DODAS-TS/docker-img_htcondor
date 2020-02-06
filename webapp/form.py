@@ -33,7 +33,7 @@ def register():
 
         # RUN GO COMMAND AND GET OUTPUT
         #
-        command = "tts-cache --map-user --user {} --token {}".format(
+        command = "tts-cache --config /app/.config.yaml --map-user --user {} --token {}".format(
             form.username.data, form.token.data)
 
         get_DN = subprocess.Popen(
@@ -45,15 +45,21 @@ def register():
         )
 
         DN, err = get_DN.communicate()
+        logging.info("Command output: %s error: %s", DN, err)
+
         # 2020/02/06 11:05:29 UserDN: /C=IT/O=CLOUD@CNAF/CN=1e7074e5-96fe-43e8-881d-4d572c128931@dodas-iam
-        print DN.split("UserDN: ")[1].replace("/", "\/")
+        try:
+            DN = err.split("UserDN: ")[1].replace("/", "\/").rstrip()
+        except Exception as ex:
+            logging.error("failed to get dn from:  %s", form.username.data, err)
+            return render_template('register.html', DN, form=form)
 
         with open('/home/uwdir/condormapfile', 'r') as condor_file:
+            old = condor_file.read()
             with open('/home/uwdir/temp_file', 'w') as temp_file:
-                entry = "GSI \"^" + DN.replace("/", "\/").replace(
-                    "=", "\=").rstrip() + "$\"   " + form.username.data + " \n"
+                entry = "GSI \"^" + DN + "$\"  " + form.username.data + " \n"
                 temp_file.write(entry)
-                temp_file.write(condor_file.read())
+                temp_file.write(old)
         os.rename('/home/uwdir/temp_file', '/home/uwdir/condormapfile')
 
         command = "adduser {}".format(form.username.data)
@@ -92,7 +98,7 @@ def register():
         else:
             logging.info("Condor schedd reconfigured")
 
-        return render_template('success.html')
+            return render_template('success.html')
     return render_template('register.html', form=form)
 
 
