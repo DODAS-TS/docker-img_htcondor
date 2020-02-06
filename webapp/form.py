@@ -46,7 +46,7 @@ def register():
 
         DN, err = get_DN.communicate()
         # 2020/02/06 11:05:29 UserDN: /C=IT/O=CLOUD@CNAF/CN=1e7074e5-96fe-43e8-881d-4d572c128931@dodas-iam
-        print DN.split("UserDN: ")[1].replace("/", "\/").replace("=", "\=")
+        print DN.split("UserDN: ")[1].replace("/", "\/")
 
         with open('/home/uwdir/condormapfile', 'r') as condor_file:
             with open('/home/uwdir/temp_file', 'w') as temp_file:
