@@ -8,8 +8,11 @@ CONTAINER_INSTANCE ?= default
 
 .PHONY: build push shell run start stop rm release
 
-build: Dockerfile
-	docker build -t $(NS)/$(IMAGE_NAME):$(VERSION) -f Dockerfile .
+build-base: Dockerfile
+	docker build -t $(NS)/$(IMAGE_NAME):$(VERSION) -f Dockerfile . --target APP
+
+build-cms: Dockerfile
+	docker build -t $(NS)/$(IMAGE_NAME):$(VERSION) -f Dockerfile . --target CMS
 
 push: login
 	docker push $(NS)/$(IMAGE_NAME):$(VERSION)

@@ -17,6 +17,7 @@ EOF
 yum -y install ca-policy-egi-core
 yum -y install ca-policy-lcg
 
+rm /etc/yum.repos.d/centos-7-x86_64.repo /etc/yum.repos.d/EGI-trustanchors.repo
 wget -O /etc/yum.repos.d/ca_CMS-TTS-CA.repo https://ci.cloud.cnaf.infn.it/view/dodas/job/ca_DODAS-TTS/job/master/lastSuccessfulBuild/artifact/ca_DODAS-TTS.repo
 yum -y install ca_DODAS-TTS
 
@@ -81,6 +82,8 @@ then
     condor_master -f
 elif [ "$1" == "wn" ];
 then
+    ## FERMI SPECIFIC
+    #source /cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17/headas-init.sh
     export HIGHPORT=0
     export LOWPORT=0
     echo "==> Check CONDOR_HOST"
@@ -160,7 +163,16 @@ then
     idmap=`echo $id | sed 's|/|\\\/|g'`
     idmap="GSI \"^"`echo $idmap | sed 's|=|\\=|g'`"$\"    condor"
 
-    echo $idmap >> /home/uwdir/condormapfile
+    if [[ ! -f /home/uwdir/condormapfile ]]; then
+        echo $idmap >> /home/uwdir/condormapfile
+    else
+        for i in `cat /home/uwdir/condormapfile | awk '{print $3}'`; do 
+            if [[ ! $i =~ ^(GSS_ASSIST_GRIDMAP|anonymous|condor)$ ]]; then
+                useradd $i; echo "Added user $i"; 
+            fi; 
+        done
+    fi
+
 
 cat >> /home/uwdir/condormapfile << EOF
 GSI (.*) GSS_ASSIST_GRIDMAP

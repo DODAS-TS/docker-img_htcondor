@@ -56,6 +56,54 @@ ENV FLOCK_TO=""
 ENV FLOCK_TO_COL_NEG=""
 ENV HOST_ALLOW_FLOCK=""
 
+## START FERMI SPECIFIC
+
+ENV CONDABIN="${CONDAPFX}/bin/conda"
+ENV CONDAPFX="/cvmfs/fermi.local.repo/anaconda3"
+
+# RUN yum install -y sqlite-devel \
+#   autoconf \
+#   automake \
+#   bzip2-devel \
+#   emacs \
+#   gcc \
+#   gcc-c++ \
+#   gcc-gfortran \
+#   git \
+#   libpng-devel \
+#   libSM-devel \
+#   libX11-devel \
+#   libXdmcp-devel \
+#   libXext-devel \
+#   libXft-devel \
+#   libXpm-devel \
+#   libXrender-devel \
+#   libXt-devel \
+#   make \
+#   mesa-libGL-devel \
+#   ncurses-devel \
+#   openssl-devel \
+#   patch \
+#   perl \
+#   perl-ExtUtils-MakeMaker \
+#   readline-devel \
+#   sqlite-devel \
+#   sudo \
+#   tar \
+#   vim \
+#   wget \
+#   which \
+#   zlib-devel && \
+# yum clean all && \
+# rm -rf /var/cache/yum
+
+# ENV PATH="/cvmfs/fermi.local.repo/anaconda3/bin:${PATH}"
+
+
+# ENV HEADAS="/cvmfs/fermi.local.repo/ftools/x86_64-pc-linux-gnu-libc2.17"
+
+# ## END OF FERMI SPECIFIC 
+
 RUN mkdir -p /opt/dodas/htc_config \
     && mkdir -p /opt/dodas/fs_remote_dir \
     && mkdir -p /opt/dodas/health_checks \
@@ -88,3 +136,31 @@ COPY ./bin/uname /bin/
 COPY --from=0 /usr/local/bin/tts-cache /usr/local/bin/tts-cache
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/sbin/dodas_condor"]
+
+FROM APP as CMS
+
+COPY cms/condorconfig/* /etc/condor/
+COPY cms/config.d/* /etc/condor/config.d/
+
+COPY cms/dodas_bin/*  /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/dodasexe_pre.sh \
+    && chmod +x /usr/local/bin/dodasexe.sh \
+    && chmod +x /usr/local/bin/dodas.sh
+
+RUN mkdir -p /etc/condor/certs \
+    && cp /etc/condor/config.d/condor_mapfile /etc/condor/certs/condor_mapfile \
+    && rm /etc/condor/config.d/condor_mapfile
+
+WORKDIR /root
+
+# Download validation script
+RUN wget https://gitlab.cern.ch/CMSSI/CMSglideinWMSValidation/raw/master/singularity_validation.sh \
+    && wget https://gitlab.cern.ch/CMSSI/CMSglideinWMSValidation/raw/master/singularity_wrapper.sh -O /usr/local/libexec/singularity_wrapper.sh
+
+RUN   chmod +x /usr/local/libexec/singularity_wrapper.sh \
+    && chmod 0755 /usr/local/libexec/singularity_wrapper.sh \
+    && chown condor:condor /usr/local/libexec/singularity_wrapper.sh
+
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/dodas.sh"]
